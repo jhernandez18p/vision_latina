@@ -1,0 +1,775 @@
+<html>
+
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+    <title>Vision Latina Panama - TV</title>
+    <link type="text/css" rel="stylesheet" href="./form.css">
+    <link rel="stylesheet" type="text/css" href="./main.css">
+    <script src="./jquery-1.3.2.min.js" type="text/javascript"></script>
+    <script src="./common.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="./default.css">
+    <script type="text/javascript" src="./player.js"></script>
+    <script type="text/javascript" src="./artDialog.js"></script>
+    <script type="text/javascript" src="./flv.min.js"></script>
+    <script type="text/javascript" src="./index.js"></script>
+    <script type="text/javascript">
+        var hostip = 'http://190.60.18.29/';
+        var vi_width = 1920;
+        var vi_height = 1080;
+        var http_port = "8186";
+        var rtsp_port = "";
+        var hls_uri = new Array();
+        var flv_uri = new Array();
+        for (var i = 0; i < 1; ++i) {
+            hls_uri[i] = new Array();
+            flv_uri[i] = new Array();
+        }
+
+        function Getajax(portid) {
+            GetVersion(hostip);
+            $.ajax({
+                type: "GET",
+                url: "http://" + hostip + "/get_sys",
+                dataType: "xml",
+                cache: false,
+                async: false,
+                success: function (data) {
+                    http_port += ":" + $(data).find("http_port").text();
+                    rtsp_port += ":" + $(data).find("rtsp_port").text();
+                    var hostname = $(data).find("hostname").text();
+                    $("#hostname").append(hostname);
+                }
+            });
+            $.ajax({
+                type: "GET",
+                url: "http://" + hostip + "/get_status",
+                dataType: "xml",
+                cache: false,
+                success: function (data) {
+                    var framerate_0 = $(data).find("vi[id=" + portid + "]").children("framerate").text();
+                    var int_cnt_0 = $(data).find("vi[id=" + portid + "]").children("int_cnt").text();
+                    var lost_int_0 = $(data).find("vi[id=" + portid + "]").children("lost_int").text();
+                    var width_0 = $(data).find("vi[id=" + portid + "]").children("width").text();
+                    var height_0 = $(data).find("vi[id=" + portid + "]").children("height").text();
+                    var interlaced_0 = $(data).find("vi[id=" + portid + "]").children("interlaced").text();
+                    var runtime = $(data).find("runtime").text();
+                    var cpuusage = $(data).find("cpuusage").text();
+                    var vga_input = $(data).find("vga_input").text();
+                    if (vga_input == "" || vga_input == 0) $("#vga_auto_adjust").hide();
+
+                    var aisamplerate = $(data).find("aisamplerate").text();
+                    var memoryfree = $(data).find("memoryfree").text();
+                    var memorytotal = $(data).find("memorytotal").text();
+                    Getmemory(memoryfree, memorytotal);
+                    var net_packet_sent = $(data).find("net_packet_sent").text();
+                    var net_packet_dropped = $(data).find("net_packet_dropped").text();
+                    $("#net_packet_sent").append(net_packet_sent);
+                    $("#net_packet_dropped").append(net_packet_dropped);
+                    if (cpuusage >= 85) {
+                        $("#cpuusage").css("color", "red");
+                        $("#cpuusage").append(cpuusage + "% (If CPU usage always more than 85%, please close some stream.)");
+                    } else {
+                        $("#cpuusage").append(cpuusage + "%");
+                    }
+                    var codec_usage = $(data).find("codec_usage").text();
+                    $("#codec_usage").append(codec_usage + "%");
+                    var audio_ok = Number($(data).find("ai[id=" + portid + "]").children("audio_ok").text());
+                    $("#audio_ok").append(audio_ok ? "Normal" : '<span style="color: red">No Data</span>');
+                    var video_ok = Number($(data).find("vi[id=" + portid + "]").children("video_ok").text());
+                    $("#video_ok").append(video_ok ? "Normal" : '<span style="color: red">No Data</span>');
+                    GetNetStatus(data);
+                    Getsd_card(data);
+                    var aitick = $(data).find("aitick").text();
+                    $("#aitick").append(aitick);
+                    var whframerate_0 = width_0 + "x" + height_0;
+                    whframerate_0 = getI_P(interlaced_0, whframerate_0);
+                    whframerate_0 = whframerate_0 + "@" + framerate_0;
+
+                    $("#int_cnt_" + portid).append(int_cnt_0);
+                    $("#lost_int_" + portid).append(lost_int_0);
+                    $("#whframerate_" + portid).append(whframerate_0);
+                    $("#runtime").append(runtime);
+                    $("#aisamplerate").append(aisamplerate);
+                    var systime = $(data).find("systime").text();
+                    $("#systime").append(systime);
+
+                    var dev_exist = $(data).find("wifi").find("dev_exist").text();
+                    var wifi_enable = $(data).find("wifi").find("enable").text();
+                    var state = $(data).find("wifi").find("state").text();
+                    var wifi_ap_mode = $(data).find("wifi").find("ap_mode").text();
+                    var ssid = $(data).find("wifi").find("ssid").text();
+                    var ip = $(data).find("wifi").find("ip").text();
+                    var level = $(data).find("wifi").find("level").text();
+                    var freq = $(data).find("wifi").find("freq").text();
+                    var mac = $(data).find("wifi").find("mac").text();
+                    if (wifi_ap_mode == "0") {
+                        get_wifi_sta(dev_exist, wifi_enable, state, ssid, ip, level, freq, mac);
+                    }
+                    else {
+                        get_wifi_ap(dev_exist, wifi_enable, ssid, ip, mac);
+                    }
+
+                    var g4_dev_exist = $(data).find("g4").find("dev_exist").text();
+                    var g4_enable = $(data).find("g4").find("enable").text();
+                    var g4_mode = $(data).find("g4").find("mode").text();
+                    var g4_status = $(data).find("g4").find("status").text();
+                    var g4_strength = $(data).find("g4").find("strength").text();
+                    var g4_online_time = $(data).find("g4").find("online_time").text();
+                    var g4_in_kbyte = $(data).find("g4").find("in_kbyte").text() + "kbyte";
+                    var g4_out_kbyte = $(data).find("g4").find("out_kbyte").text() + "kbyte";
+                    var g4_gateway = $(data).find("g4").find("gateway").text();
+                    var g4_ip = $(data).find("g4").find("ip").text();
+                    var g4_imei = $(data).find("g4").find("imei").text();
+                    Getg4(g4_dev_exist, g4_enable, g4_mode, g4_status, g4_strength, g4_online_time, g4_in_kbyte, g4_out_kbyte, g4_gateway, g4_ip, g4_imei);
+
+                    var enable = $(data).find("lan_dhcp").find("enable").text();
+                    var ip = $(data).find("lan_dhcp").find("ip").text();
+                    var mask = $(data).find("lan_dhcp").find("mask").text();
+                    var route = $(data).find("lan_dhcp").find("route").text();
+                    get_dhcp(enable, ip, mask, route);
+
+                    for (i = 0; i < 4; i++) {
+                        if (i != 0) {
+                            var venc_enable = $(data).find("vi[id=" + portid + "]").find("venc[id=" + i + "]").children("enable").text();
+                            if (venc_enable == 0) {
+                                $("#fileld_disable_" + i).show();
+                                $("#second_" + i).hide();
+                            }
+                            else {
+                                $("#fileld_disable_" + i).hide();
+                                $("#second_" + i).show();
+                            }
+                        }
+
+                        var codec = $(data).find("vi[id=" + portid + "]").find("venc[id=" + i + "]").children("codec").text();
+                        if (codec == "96") {
+                            $("#codec" + portid + "_" + i).append("H.264");
+                            $("#play" + portid + "_" + i).show();
+                            $("#play" + portid + "_" + i + "_h265").hide();
+                            $("#div_mjpgandjpg" + portid + "_" + i).hide();
+                        }
+                        else if (codec == "265") {
+                            $("#codec" + portid + "_" + i).append("H.265");
+                            $("#play" + portid + "_" + i).hide();
+                            $("#play" + portid + "_" + i + "_h265").show();
+                            $("#div_mjpgandjpg" + portid + "_" + i).hide();
+                        }
+                        else if (codec == "1002") {
+                            $("#codec" + portid + "_" + i).append("MJPEG");
+                            $("#play" + portid + "_" + i).hide();
+                            $("#play" + portid + "_" + i + "_h265").hide();
+                            $("#div_mjpgandjpg" + portid + "_" + i).show();
+                        }
+
+                        var rtmp_url = $(data).find("vi[id=" + portid + "]").find("venc[id=" + i + "]").children("rtmp_url0").text();
+                        if (rtmp_url == "") {
+                            $("#rtmp_url" + portid + "_" + i).append("Disable");
+                        }
+                        else {
+                            $("#rtmp_url" + portid + "_" + i).append(rtmp_url);
+                        }
+
+                        var rtmp_status = $(data).find("vi[id=" + portid + "]").find("venc[id=" + i + "]").children("rtmp_status").text();
+                        var rtmp_push_url = $(data).find("vi[id=" + portid + "]").find("venc[id=" + i + "]").children("rtmp_publish_url").text();
+                        if (rtmp_push_url == "") {
+                            $("#rtmp_push_url" + portid + "_" + i).append("Disable");
+                        }
+                        else {
+                            if (rtmp_push_url.indexOf("rtsp://") != -1) {
+                                if (rtmp_status == 0) {
+                                    rtmp_push_url = 'RTSP PUSH URL(Connected): ' + rtmp_push_url + '</DIV>';
+                                }
+                                else {
+                                    rtmp_push_url = 'RTSP PUSH URL(Not Connected): ' + rtmp_push_url + '</DIV>';
+                                }
+                            }
+                            else {
+                                if (rtmp_status == 0) {
+                                    rtmp_push_url = 'RTMP(S) PUSH URL(Connected): ' + rtmp_push_url + '</DIV>';
+                                }
+                                else {
+                                    rtmp_push_url = 'RTMP(S) PUSH URL(Not Connected): ' + rtmp_push_url + '</DIV>';
+                                }
+                            }
+                            $("#rtmp_push_url" + portid + "_" + i).html(rtmp_push_url);
+                        }
+
+                        var framerate = $(data).find("vi[id=" + portid + "]").find("venc[id=" + i + "]").children("framerate").text();
+                        var width = $(data).find("vi[id=" + portid + "]").find("venc[id=" + i + "]").children("width").text();
+                        var height = $(data).find("vi[id=" + portid + "]").find("venc[id=" + i + "]").children("height").text();
+                        var interlaced = $(data).find("vi[id=" + portid + "]").find("venc[id=" + i + "]").children("interlaced").text();
+                        var whframerate = width + "x" + height + "@" + framerate;
+                        $("#whframerate" + portid + "_" + i).append(whframerate);
+
+                        eval("$venc_width" + portid + "_" + i + "='" + width + "'");
+                        eval("$venc_height" + portid + "_" + i + "='" + height + "'");
+
+                        var bitrate = $(data).find("vi[id=" + portid + "]").find("venc[id=" + i + "]").children("bitrate").text();
+                        $("#bitrate" + portid + "_" + i).append(bitrate);
+
+                        var hostip_haveport = false;
+                        if (hostip.indexOf(":") != -1) hostip_haveport = true;
+
+                        var mjpg_url0 = $(data).find("vi[id=" + portid + "]").find("venc[id=" + i + "]").children("mjpg_url0").text();
+                        if (mjpg_url0 == "") {
+                            $("#mjpg0_url" + portid + "_" + i).append("Disable");
+                        }
+                        else {
+                            mjpg_url0 = changeIP(mjpg_url0, 'http://');
+                            $("#mjpg0_url" + portid + "_" + i).append('<a target="_blank" href="' + mjpg_url0 + '">' + mjpg_url0 + '</a>');
+                        }
+
+                        var jpg_url0 = $(data).find("vi[id=" + portid + "]").find("venc[id=" + i + "]").children("jpg_url0").text();
+                        if (jpg_url0 == "") {
+                            $("#jpg0_url" + portid + "_" + i).append("Disable");
+                        }
+                        else {
+                            jpg_url0 = changeIP(jpg_url0, 'http://');
+                            $("#jpg0_url" + portid + "_" + i).append('<a target="_blank" href="' + jpg_url0 + '">' + jpg_url0 + '</a>');
+                        }
+
+                        var ts_url0 = $(data).find("vi[id=" + portid + "]").find("venc[id=" + i + "]").children("ts_url0").text();
+                        if (ts_url0 == "") {
+                            $("#ts0_url" + portid + "_" + i).append("Disable");
+                        }
+                        else {
+                            ts_url0 = changeIP(ts_url0, 'http://');
+                            if (http_port != "") {
+
+                                var ts_url0_port = insert_flg(ts_url0, http_port, 'http://');
+                                if (!hostip_haveport) ts_url0 = ts_url0 + "&nbsp;&nbsp;" + ts_url0_port;
+                            }
+                            $("#ts0_url" + portid + "_" + i).append(ts_url0);
+                        }
+
+                        var hls_url0 = $(data).find("vi[id=" + portid + "]").find("venc[id=" + i + "]").children("hls_url0").text();
+                        eval("$hls" + portid + "_" + i + "='" + hls_url0 + "'");
+                        if (hls_url0 == "") {
+                            $("#hls0_url" + portid + "_" + i).append("Disable");
+                        }
+                        else {
+                            hls_uri[portid][i] = hls_url0;
+                            hls_url0 = changeIP(hls_url0, 'http://');
+                            if (http_port != "") {
+                                var hls_url0_port = insert_flg(hls_url0, http_port, 'http://');
+                                if (!hostip_haveport) hls_url0 = hls_url0 + "&nbsp;&nbsp;" + hls_url0_port;
+                            }
+                            $("#hls0_url" + portid + "_" + i).append(hls_url0);
+                        }
+
+                        var flv_url0 = $(data).find("vi[id=" + portid + "]").find("venc[id=" + i + "]").children("flv_url0").text();
+                        eval("$flv" + portid + "_" + i + "='" + flv_url0 + "'");
+                        if (flv_url0 == "") {
+                            $("#flv0_url" + portid + "_" + i).append("Disable");
+                        }
+                        else {
+                            flv_uri[portid][i] = flv_url0;
+                            flv_url0 = changeIP(flv_url0, 'http://');
+                            if (http_port != "") {
+                                var flv_url0_port = insert_flg(flv_url0, http_port, 'http://');
+                                if (!hostip_haveport) flv_url0 = flv_url0 + "&nbsp;&nbsp;" + flv_url0_port;
+                            }
+                            $("#flv0_url" + portid + "_" + i).append(flv_url0);
+                        }
+                        var rtsp_url0 = $(data).find("vi[id=" + portid + "]").find("venc[id=" + i + "]").children("rtsp_url0").text();
+                        if (rtsp_url0 == "") {
+                            $("#rtsp0_url" + portid + "_" + i).append("Disable");
+                        }
+                        else {
+                            rtsp_url0 = changeIP(rtsp_url0, 'rtsp://');
+                            if (rtsp_port != "") {
+                                var rtsp_url0_port = insert_flg(rtsp_url0, rtsp_port, 'rtsp://');
+                                if (!hostip_haveport) rtsp_url0 = rtsp_url0 + "&nbsp;&nbsp;" + rtsp_url0_port;
+                            }
+                            $("#rtsp0_url" + portid + "_" + i).append(rtsp_url0);
+                        }
+                        var multicast_url0 = $(data).find("vi[id=" + portid + "]").find("venc[id=" + i + "]").children("multicast_url0").text();
+                        if (multicast_url0 == "") {
+                            $("#multicast_url" + portid + "_" + i).append("Disable");
+                        }
+                        else {
+                            $("#multicast_url" + portid + "_" + i).append(multicast_url0);
+                        }
+
+                        var srt_url0 = $(data).find("vi[id=" + portid + "]").find("venc[id=" + i + "]").children("srt_url0").text();
+                        if (srt_url0 == "") {
+                            $("#srt_url" + portid + "_" + i).append("Disable");
+                        }
+                        else {
+                            var middle = hostip;
+                            if (middle.indexOf(":") != -1) {
+                                var index = middle.indexOf(":");
+                                middle = middle.substr(0, index);
+                            }
+                            var tail = srt_url0.substr(srt_url0.lastIndexOf(":"));
+                            srt_url0 = "srt://" + middle + tail;
+                            $("#srt_url" + portid + "_" + i).append(srt_url0);
+                        }
+
+                        var srt_publish_status = $(data).find("vi[id=" + portid + "]").find("venc[id=" + i + "]").children("srt_publish_status").text();
+                        var srt_publish_url0 = $(data).find("vi[id=" + portid + "]").find("venc[id=" + i + "]").children("srt_publish_url0").text();
+                        if (srt_publish_url0 == "") {
+                            $("#srt_push_url" + portid + "_" + i).append("Disable");
+                        }
+                        else {
+                            var srt_push_url;
+                            if (srt_publish_status == 0) {
+                                srt_push_url = 'SRT PUSH URL(Connected)：' + srt_publish_url0;
+                            }
+                            else {
+                                srt_push_url = 'SRT PUSH URL(Not Connected)：' + srt_publish_url0;
+                            }
+                            $("#srt_push_url" + portid + "_" + i).html(srt_push_url);
+                        }
+                        var hls_publish_status = $(data).find("vi[id=" + portid + "]").find("venc[id=" + i + "]").children("hls_publish_status").text();
+                        var hls_publish_url0 = $(data).find("vi[id=" + portid + "]").find("venc[id=" + i + "]").children("hls_publish_url0").text();
+                        if (hls_publish_url0 == "") {
+                            $("#hls_push_url" + portid + "_" + i).append("Disable");
+                        }
+                        else {
+                            hls_publish_url0 = hls_publish_url0.replace(/&copy/, "&amp;copy");
+                            var url;
+                            if (hls_publish_status.indexOf("200") != -1 || hls_publish_status.indexOf("202") != -1) {
+                                url = 'HLS PUSH URL(Connected):' + hls_publish_url0;
+                            }
+                            else {
+                                url = 'HLS PUSH URL(Not Connected):' + hls_publish_url0;
+                            }
+                            $("#hls_push_url" + portid + "_" + i).html(url);
+
+                        }
+                    }
+                    $("#gb28181_status").hide();
+                    var gb28181_publish_status = $(data).find("gb28181_publish_status").text();
+                    if (gb28181_publish_status != "") {
+                        $("#gb28181_status").show();
+                        gb28181_publish_status = GetGB28181state(gb28181_publish_status);
+                        $("#gb28181_publish_status").append(gb28181_publish_status);
+                    }
+                    else {
+                        $("#gb28181_status").hide();
+                    }
+
+                    var vi_preview = $(data).find("vi[id=" + portid + "]").children("vi_preview").text();
+                    vi_preview = changeIP(vi_preview, 'http://');
+                    eval("$preview_url" + portid + "_0" + "='" + vi_preview + "'");
+                    $("#mjpeg_player_div").hide();
+                }
+
+            })
+
+        }
+        function GetGB28181state(state) {
+            var result = "";
+            if (state == "0") {
+                result = "Offline";
+            } else if (state == "1") {
+                result = "Online";
+            }
+            return result;
+        }
+
+        function getI_P(interlaced, whframerate) {
+            if (interlaced == 0) {
+                whframerate = whframerate + "p";
+            }
+            else {
+                whframerate = whframerate + "i";
+            }
+            return whframerate;
+        }
+        function GetajaxStatus() {
+            Getajax(0);
+        }
+        function Getmemory(memoryfree, memorytotal) {
+            memoryfree = memoryfree / 1024;
+            memorytotal = memorytotal / 1024;
+            var memoryused = memorytotal - memoryfree;
+            memorytotal = memorytotal.toFixed(1);
+            memoryused = memoryused.toFixed(1);
+            if (memoryfree < 15) {
+                $("#memory").css("color", "red");
+                var memory = memoryused + "M/" + memorytotal + "M（开机一分钟后，如果内存占用太大，请关闭一些HLS流或调低比特率）";
+                $("#memory").append(memory);
+            }
+            else {
+                var memory = memoryused + "M/" + memorytotal + "M";
+                $("#memory").append(memory);
+            }
+        }
+        function Getstate(state) {
+            var result = "";
+            if (state == "COMPLETED") {
+                result = "COMPLETED";
+            }
+            else if (state == "DISCONNECTED") {
+                result = "DISCONNECTED";
+            }
+            else {
+                result = "connecting(If you don't connect for a long time, check the wifi settings.)";
+            }
+            return result;
+        }
+        function insert_flg(str, flg, tmp1) {
+            var sn = findstr(str, '/', 3);
+            var newstr = "";
+            var tmp2 = str.substring(sn, str.length);
+            newstr = tmp1 + hostip + flg + tmp2;
+            return newstr;
+        }
+        function changeIP(str, tmp1) {
+            var sn = findstr(str, '/', 3);
+            var newstr = "";
+            var tmp2 = str.substring(sn, str.length);
+            newstr = tmp1 + hostip + tmp2;
+            return newstr;
+        }
+        function findstr(str, cha, num) {
+            var x = str.indexOf(cha);
+            for (var i = 0; i < num; i++) {
+                x = str.indexOf(cha, x + i);
+            }
+            return x;
+        }
+        function get_dhcp(enable, ip, mask, route) {
+            if (enable == 0) {
+                $("#lan_dhcp_enable").hide();
+            }
+            else {
+                $("#lan_dhcp_enable").show();
+                $("#ip").append(ip);
+                $("#mask").append(mask);
+                $("#route").append(route);
+            }
+        }
+        function GetNetStatus(data) {
+            var net_status = $(data).find("net_status").text();
+            net_status = parseInt(net_status);
+            var status = "";
+            if (1 == net_status) {
+                $("#net_status_div").show();
+                status = "INTERNET";
+            } else if (2 == net_status) {
+                $("#net_status_div").show();
+                status = "INTERNET IP";
+            } else if (3 == net_status) {
+                $("#net_status_div").show();
+                status = "LAN";
+            } else if (4 == net_status) {
+                $("#net_status_div").show();
+                status = "LOCAL";
+            } else {
+                $("#net_status_div").hide();
+            }
+            $("#net_status").append(status);
+        }
+
+        function Getsd_card(data) {
+            var sd_card_exit = $(data).find("disk").find("exist").text();
+            var unformat = $(data).find("disk").find("unformat").text();
+            var full = $(data).find("disk").find("full").text();
+            var slow = $(data).find("disk").find("slow").text();
+            var totalspace = $(data).find("disk").find("totalspace").text();
+            var freespace = $(data).find("disk").find("freespace").text();
+            var recording = $(data).find("disk").find("recording").text();
+
+            if (sd_card_exit == 0) {
+                $("#sd_card_Enable").hide();
+            }
+            else if (sd_card_exit == 1) {
+                $("#sd_card_Enable").show();
+                if (unformat == 1) {
+                    $("#sd_card_en").hide();
+                    $("#sd_card_disen").show();
+                }
+                else if (unformat == 0) {
+                    $("#sd_card_en").show();
+                    $("#sd_card_disen").hide();
+                    $("#totalspace").append(totalspace + " MByte");
+                    $("#freespace").append(freespace + " MByte");
+                    if (recording == 0) {
+                        $("#span_record").replaceWith("<span class='span_href' onclick='OnClickRecord(1)'> (Start Record) </span>");
+                    }
+                    else {
+                        $("#span_record").replaceWith("<span class='span_href' onclick='OnClickRecord(0)'> (Stop Record) </span>");
+                    }
+
+                    var disk_mount = $(data).find("disk").find("disk_mount").text();
+                    if (disk_mount == 0) {
+                        $("#span_mount_sdcard").replaceWith("<span class='span_href' onclick='OnClickMount(1)'> (Mount Disk) </span>");
+                    }
+                    else {
+                        $("#span_mount_sdcard").replaceWith("<span class='span_href' onclick='OnClickMount(0)'> (Unmount Disk) </span>");
+                    }
+                    recording = (recording == 0 ? "Not Recording" : "Recording");
+                    $("#recording").append(recording);
+                    if (full == 1)
+                        $("#sd_card_full").show();
+                    else
+                        $("#sd_card_full").hide();
+                    if (slow == 1)
+                        $("#sd_card_slow").show();
+                    else
+                        $("#sd_card_slow").hide();
+
+                    var samba_server = $(data).find("disk").find("samba_server").text();
+                    $("#samba_server").append(samba_server);
+                }
+            }
+        }
+        function get_wifi_sta(dev_exist, wifi_enable, state, ssid, ip, level, freq, mac) {
+            if (dev_exist == 0) {
+                $("#wifi_enable").hide();
+            }
+            else {
+                $("#wifi_enable").show();
+                if (wifi_enable == 0) {
+                    $("#wifi_disen").show();
+                    $("#wifi_en").hide();
+                }
+                else {
+                    $("#wifi_disen").hide();
+                    $("#wifi_en").show();
+                    strstate = Getstate(state);
+                    if (state == "COMPLETED") {
+                        $("#wifi_state").append(strstate);
+                        $("#wifi_ssid").append(ssid);
+                        $("#wifi_mac").append(mac);
+                        $("#wifi_ip").append(ip + " ");
+                        if (level != "") {
+                            level += "%";
+                            $("#wifi_level").show();
+                            $("#wifi_level").append(level);
+                        }
+                        else {
+                            $("#wifi_level").hide();
+                        }
+                        if (freq != "") {
+                            freq = freq / 1000;
+                            freq += " GHz";
+                            $("#wifi_freq").show();
+                            $("#wifi_freq").append(freq);
+                            $("#wifi_rate").show();
+                        }
+                        else {
+                            $("#wifi_freq").hide();
+                            $("#wifi_rate").hide();
+                        }
+                    }
+                    else {
+                        $("#wifi_mac").append(mac);
+                        $("#wifi_state").append(strstate);
+                        $("#wifi_ssid_tree").hide();
+                        $("#wifi_ip_tree").hide();
+                        $("#wifi_level").hide();
+                        $("#wifi_freq").hide();
+                        $("#wifi_rate").hide();
+                    }
+                }
+
+            }
+        }
+        function get_wifi_ap(dev_exist, wifi_enable, ssid, ip, mac) {
+            if (dev_exist == 0) {
+                $("#wifi_enable").hide();
+            }
+            else {
+                $("#wifi_enable").show();
+                if (wifi_enable == 0) {
+                    $("#wifi_en").hide();
+                    $("#wifi_disen").show();
+                }
+                else {
+                    $("#wifi_disen").hide();
+                    $("#wifi_en").show();
+                    $("#wifi_mac").append(mac);
+                    $("#wifi_ssid").append(ssid);
+                    $("#wifi_ip").append(ip);
+                    $("#wifi_level").hide();
+                    $("#wifi_freq").hide();
+                    $("#wifi_rate").hide();
+                    $("#wifi_state").hide();
+                }
+            }
+        }
+        function Getg4(g4_dev_exist, g4_enable, g4_mode, g4_status, g4_strength, g4_online_time, g4_in_kbyte, g4_out_kbyte, g4_gateway, g4_ip, g4_imei) {
+            if (g4_dev_exist == 0) {
+                $("#g4_enable").hide();
+            }
+            else {
+                $("#g4_enable").show();
+                if (g4_enable == 0) {
+                    $("#g4_disen").show();
+                    $("#g4_en").hide();
+                }
+                else {
+                    $("#g4_disen").hide();
+                    $("#g4_en").show();
+                    g4_status = Getg4Status(g4_status);
+                    $("#g4_status").append(g4_status);
+                    $("#g4_imei").append(g4_imei);
+                    $("#g4_mode").append(g4_mode);
+                    g4_strength = Getg4strength(g4_strength);
+                    $("#g4_strength").append(g4_strength);
+                    g4_online_time = formatSeconds(g4_online_time);
+                    $("#g4_online_time").append(g4_online_time);
+                    $("#g4_in_kbyte").append(g4_in_kbyte);
+                    $("#g4_out_kbyte").append(g4_out_kbyte);
+                    $("#g4_ip").append(g4_ip);
+                    $("#g4_gateway").append(g4_gateway);
+                }
+            }
+        }
+        function formatSeconds(value) {
+
+            var theTime = parseInt(value);// 秒
+
+            var theTime1 = 0;// 分
+
+            var theTime2 = 0;// 小时
+
+            if (theTime > 60) {
+
+                theTime1 = parseInt(theTime / 60);
+
+                theTime = parseInt(theTime % 60);
+
+                if (theTime1 > 60) {
+
+                    theTime2 = parseInt(theTime1 / 60);
+
+                    theTime1 = parseInt(theTime1 % 60);
+
+                }
+
+            }
+
+            var result = "" + parseInt(theTime) + "seconds";
+
+            if (theTime1 > 0) {
+
+                result = "" + parseInt(theTime1) + "minutes" + result;
+
+            }
+
+            if (theTime2 > 0) {
+                result = "" + parseInt(theTime2) + "hours" + result;
+
+            }
+            return result;
+        }
+
+        function Getg4strength(g4_strength) {
+            if (g4_strength == 255) {
+                g4_strength = "NO SIGNAL";
+            }
+            else {
+                g4_strength = "-" + (119 - parseInt(g4_strength)) + "dBm";
+            }
+            return g4_strength;
+        }
+        function Getg4Status(state) {
+            var result = "";
+            if (state == "1") {
+                result = "COMPLETED";
+            }
+            else if (state == "2") {
+                result = "CONNECTING";
+            }
+            else {
+                result = "DISCONNECTED";
+            }
+            return result;
+        }
+        function SetVgaParam() {
+            $.ajax({
+                url: "http://" + hostip + "/set_adv?vga_auto_adjust=1",
+                dataType: "text",
+                cache: false,
+                success: function (data) {
+                    if (data == "succeed") {
+                        alert('Set successfully!');
+                    } else {
+                        alert('Failed to set!');
+                    }
+                }
+            });
+        }
+        function onClickPlayerControl(mjpeg_uri) {
+            var height = 360;
+            var width = vi_width * height / vi_height;
+
+            $("#mjpeg_player_div").show();
+            var value = "";
+            if (mjpeg_uri != "") {
+                value = '<img id="mjpeg_player0_0" src="' + mjpeg_uri + '" style="position:absolute; background:#000; color: #FFFFFF; width: ' + width + 'px; height: ' + height + 'px; margin-left: 255px; margin-top: -375px;">';
+            }
+            else {
+                value = '<img id="mjpeg_player0_0" style="position:absolute; background:#000; color: #FFFFFF; width: 640px; height: 360px; margin-left: 255px; margin-top: -375px;">';
+            }
+
+            var left = 241 + width;
+            value += '<div id="mjpeg_player_close_div"><img id="player_loading_logo" src="./close.png" border="0" style="position:absolute; margin-top: -375px; margin-left: ' + left + 'px; filter:alpha(Opacity=80); -moz-opacity:0.8; opacity: 0.8;" /></div>';
+
+            $("#mjpeg_player_div").html(value);
+
+            $("#mjpeg_player_close_div").click(function () {
+                $("#mjpeg_player_div").hide();
+            });
+        }
+        //添加修改开始
+
+        function Getsystime() {
+            var nowtime = getNowFormatDate();
+            $.ajax({
+                type: "GET",
+                url: "http://" + hostip + "/set_time?sync_time=" + nowtime,
+                dataType: "text",
+                cache: false,
+                success: function (data) {
+                    if (data == "succeed") {
+                        alert('Set successfully!');
+                        window.location.href = "";
+                    } else {
+                        alert('Failed to set!');
+                    }
+                }
+            });
+        }
+		//添加修改结束
+    </script>
+    <script src="./prod.h265.wasm.combine.js" type="text/javascript"></script>
+    <style>
+        #mjpeg_player0_0{
+            position: absolute;
+            background: #001;
+            color: #FFFFFF;
+            width: 100vw;
+            height: 100vh;
+            object-fit: contain;
+        }
+        #player_loading_logo{
+            position:absolute; 
+            margin-top: 15px; 
+            margin-left: 90%; 
+            filter:alpha(Opacity=80); 
+            -moz-opacity:0.8; opacity: 0.8;
+        }
+        body{
+            background-image: linear-gradient(180deg, #FFFFFF 0%, #B529F2 100%);
+            margin: 0 !important;
+            padding: 0px !important;
+            overflow: hidden !important;
+        }
+    </style>
+</head>
+
+<body onload="GetajaxStatus()">
+    <div class="span_href" onclick="onClickPlayerControl($preview_url0_0);"></div>
+    <img id="mjpeg_player0_0" src="http://190.60.18.29:8186/vi_preview.mjpg"/>
+    <div id="mjpeg_player_close_div">
+        <img id="player_loading_logo" src="./close.png" border="0" />
+    </div>
+</body>
+
+</html>

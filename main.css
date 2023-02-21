@@ -1,0 +1,449 @@
+@charset "utf-8";
+body {
+	margin: 0px;
+	padding: 0px;
+	color: #646464;
+	font: 13px "Microsoft Yahei", "微软雅黑", Arial, Helvetica, SimSun, sans-serif;
+	background-color: #F2F2F2;
+	padding-bottom: 75px;
+	word-wrap: break-word;
+}
+h1, h2, h3, h4, ul, li, dl, dt, dd {
+	margin: 0px;
+	padding: 0px;
+	font-size: 13px;
+}
+ul, li {
+	list-style: none
+}
+.forms {
+	line-height: 2em;
+}
+a:link {
+	color: rgb(247, 148, 29);
+	text-decoration: none;
+}
+a:visited {
+	color: rgb(48, 164, 177);
+	text-decoration: none;
+}
+a:hover {
+	color: rgb(247, 148, 29);
+}
+.v_line {
+	padding: 0px 5px;
+	color: rgb(153, 153, 153);
+}
+.txt_right {
+	margin-top: 15px;
+	float: right;
+}
+.box {
+	padding: 10px;
+	border: 1px solid rgb(186, 185, 185);
+	width: 600px;
+	color: rgb(112, 112, 112);
+	font-size: 14px;
+}
+.box2 {
+	padding: 10px;
+	border: 1px solid rgb(186, 185, 185);
+	width: 300px;
+	height: 37px;
+	color: rgb(112, 112, 112);
+	font-size: 14px;
+}
+.check {
+	margin: 25px;
+	padding: 10px 15px;
+	border: 1px solid rgb(186, 185, 185);
+	text-align: left;
+	background-color: rgb(247, 247, 247);
+}
+.good {
+	}
+.icon {
+	padding-right: 8px;
+	float: left;
+}
+.bad {
+	}
+/*header begin*/
+.header {
+	position:;
+	top: 0px;
+	width: 100%;
+	height: 65px;
+	overflow: hidden;
+	color: black;
+	background-color: white;
+}
+.header_b {
+	width: 950px;
+	margin: 0px auto;
+	height: 65px;
+	overflow: hidden;
+	line-height: 64px;
+}
+.header_b .logo {
+	float: left;
+	margin: auto;
+}
+.header_b .logo img {
+	border: none
+}
+.header_b .logo_v {
+	float: left;
+	line-height: 15px;
+	margin: 22px 0px 0px 0px;
+}
+.header_b ul {
+	float: right;
+	text-align: center;
+	margin-right: 40px;
+}
+.header_b ul li {
+	float: left;
+	width: 120px;
+}
+.header_b ul li a {
+	color: #858585
+}
+.header_b .language {
+	float: right;
+}
+.header_b .language select {
+	width: auto;
+	height: 21px;
+	line-height: 21px;
+	background: #e8e8e8;
+	border: 1px solid;
+	margin-top: 20px;
+	color: #848484;
+}
+#version {
+	color: #26A2E0;
+	font-size: 13px;
+	font-weight:bold;
+	line-height: 25px;
+	display: block;
+}
+#LanSle {
+	color:gray;
+	background-color:white;
+}
+/*nav begin*/
+.navigation {
+	position: fixed;
+	bottom: 0px;
+	z-index: 999;
+	width: 100%;
+	height: 45px;
+	line-height: 45px;
+	background-color:#FFFFFF;
+}
+.navigation ul {
+	width: 950px;
+	margin: 0 auto;
+	overflow: visible;
+	text-align:center;
+}
+.navigation ul li {
+	font-weight: normal;
+	float: left;
+	width: 118px;
+	text-align: center;
+}
+.navigation li a {
+	display: block;
+	width: 100%;
+	height: 2px;
+	font-size: 14px;
+	font-weight: bold;
+	color: #6c6b6b;
+}
+.navigation li a:hover {
+	color: #26A2E0;
+}
+.navigation li .active {
+	color:#26A2E0;
+	background: #feca3d;
+}
+.navigation p {
+	display:none;
+}
+td {
+	padding: 12px;
+	text-align: left;
+}
+.gray td {
+	background-color: rgb(247, 247, 247);
+}
+.table_main {
+	border-top-color: rgb(186, 185, 185);
+	border-right-color: rgb(186, 185, 185);
+	border-left-color: rgb(186, 185, 185);
+	border-top-width: 1px;
+	border-right-width: 1px;
+	border-left-width: 1px;
+	border-top-style: solid;
+	border-right-style: solid;
+	border-left-style: solid;
+}
+tr td {
+	border-bottom-color: rgb(186, 185, 185);
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+.serchtable {
+	border: 0px;
+}
+.serchtable td {
+	border: 0px;
+}
+.serchtable img {
+	border: 0px;
+}
+/* 内容表格 */
+.wrapper {
+	width: 950px;
+	margin: -12px auto 10px auto;
+}
+.wrapper h1 {
+	height: 50px;
+	line-height: 50px;
+	display:none;
+}
+.content {
+	border-radius: 5px;
+	border: 1px solid #26A2E0;
+	padding-bottom: -20px;
+	background: #ececed;
+	box-shadow: 2px 2px 3px #ccc;
+	margin-bottom: 0px;
+}
+.clear {
+	clear: both;
+}
+.in {
+	margin: 0px 0 0px 25px;
+	text-align: left;
+}
+.author {
+	height: 45px;
+	line-height: 40px;
+	margin: 0;
+	width: 100%;
+	text-indent: 15px;
+	background-position: left bottom;
+	margin-bottom: 10px;
+}
+.author h2 {
+	color: #fff;
+	font-size: 18px;
+	font-weight: normal;
+}
+.line {
+	height: 1px;
+	border-top: 1px solid #dadadb;
+	margin-bottom: 10px;
+}
+.t_index_1 {
+	background-image: url(t_index_1.jpg)
+}
+/*btn begin*/
+.write dd .b_shezhiE, .write dd .b_shangchuanE, .write dd .b_backup_firmwareE, .write dd .b_backup_configE, .write dd .b_chongqiE, .write dd .b_chongzhiE, .write dd .b_xiugaiE,
+.write dd .b_shezhi, .write dd .b_shangchuan, .write dd .b_backup_firmware, .write dd .b_backup_config, .write dd .b_chongqi, .write dd .b_chongzhi, .write dd .b_xiugai{
+	min-width: 80px;
+	background-color: #26A2E0;
+	border-radius: 8px;
+	font-size: 14px;
+	font-weight: bold;
+	color: white;
+	cursor: pointer;
+}
+.write dd .b_chongzhiE, .write dd .b_chongzhi {
+	background-color: #F1A573;
+}
+.write dd .b_uploadE,.write dd .b_upload {
+	width: 60px;
+	height: 30px;
+	line-height: 22px;
+	text-align: center;
+	background-color: #008080;
+	border-radius: 5px;
+	border: 0px;
+	font-size: 12px;
+	font-weight: bold;
+	color: white;
+	cursor: pointer;
+}
+/**--------------表单开始---------------**/
+.write {
+	width: 100%;
+	padding: 10px 0;
+}
+.write dl.title {
+	font-weight: bold;
+	color: #DC143C
+}
+.write dl {
+	clear: both;
+	padding-bottom: 2px;
+	line-height: 31px;
+	overflow: hidden;
+	color: #3487d7;
+	overflow: hidden
+}
+.write dl dt {
+	color: #333333;
+	float: left;
+	width: 200px;
+	overflow: hidden;
+	padding-right: 20px;
+	text-align: right;
+}
+.write dd {
+	float: left;
+	width: 700px;
+}
+.write dd .input {
+	height: 26px;
+	line-height: 26px;
+	padding: 0px 3px;
+	border: 1px #d0d0d0 solid;
+	background-repeat: no-repeat;
+}
+.write dd .select {
+	height: 26px;
+	line-height: 26px;
+}
+.write dd select {
+	border: 1px solid #dadadb;
+	background: #fff;
+	margin-right: 20px;
+}
+.write dd input {
+	margin-top: 3px;
+	border: 1px solid #dadadb;
+	background: #fff;
+	width: 238px;
+	margin-right: 20px;
+}
+.write dd div {
+	clear: both;
+	line-height: 30px;
+}
+.write dd div input {
+	line-height: 16px;
+	height: 16px;
+}
+.write dd div span {
+	padding-right: 10px;
+}
+.write dd .but {
+	width: 60px;
+	height: 30px;
+	background: none;
+	border: 0px;
+	font-size: 14px;
+	font-weight: bold;
+	color: white;
+	cursor: pointer;
+}
+.write dd .com_btn, .write dd .com_btn_E {
+	width: 110px;
+	height: 40px;
+}
+.write_system {
+	width: 100%;
+	margin: 0 auto;
+	padding-top: 1px;
+}
+.write_system dl {
+	clear: both;
+	padding-bottom: 0px;
+	padding-top: 1px;
+}
+.write_system dl dt {
+	font-size: 14px;
+	color: #333333;
+	float: left;
+	line-height: 25px;
+	width: 20%;
+	padding-right: 10px;
+	text-align: right;
+}
+.write_system dd {
+	float: left;
+	width: 70%;
+}
+.write_system dd .input {
+	height: 15px;
+	line-height: 20px;
+	padding: 0px 3px;
+	border: 1px #d0d0d0 solid;
+	background-repeat: no-repeat;
+}
+.write_system dd .select {
+	height: 20px;
+	line-height: 20px;
+}
+.write_system dd div {
+	clear: both;
+	line-height: 30px;
+}
+.write dd div input {
+	line-height: 16px;
+	height: 16px;
+}
+.write_system dd div span {
+	padding-right: 10px;
+}
+.write_system dd .but {
+	width: 60px;
+	height: 30px;
+	background: none;
+	border: 0px;
+	font-size: 14px;
+	font-weight: bold;
+	color: white;
+	cursor: pointer;
+}
+table.page {
+	height: 65px;
+	border-left: 10px solid #a8a8a8;
+	border-right: 10px solid #a8a8a8;
+	border-bottom: 10px solid #a8a8a8;
+	font-size: 12px;
+}
+.graph {
+	width: 450px;
+	border: 1px solid #30A4B1;
+	height: 25px;
+}
+#bar {
+	display: block;
+	background: #30A4B1;
+	float: left;
+	height: 100%;
+	text-align: center;
+}
+#barNum {
+	position: absolute;
+}
+.span_href {
+	color: rgb(87, 160, 0);
+	text-decoration: none;
+	cursor: pointer;
+}
+.span_href:hover {
+	color: rgb(0, 0, 0);
+}
+.span_href:active {
+	color: rgb(119, 119, 119);
+}
+.span_href:focus {
+	outline: 1px;
+}
+/**--------------表单结束---------------**/
